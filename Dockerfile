@@ -1,8 +1,22 @@
-# Use Eclipse Temurin with Java 17 as base
-FROM eclipse-temurin:17-jdk-jammy
+# ─── Stage 1: Build the Spring Boot JAR ──────────────────────────────────────
+FROM eclipse-temurin:17-jdk-jammy AS builder
 
-# Install Python 3, pip, and required build tools for CmdStan and psycopg2
-RUN apt-get update && apt-get install -y \
+WORKDIR /build
+
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+# Cache dependencies first (faster rebuilds)
+RUN ./mvnw dependency:go-offline -B -q
+
+COPY src src
+RUN ./mvnw clean package -DskipTests -q
+
+# ─── Stage 2: Runtime image (Java + Python) ──────────────────────────────────
+FROM eclipse-temurin:17-jre-jammy
+
+# Install Python 3 + build tools for Prophet/psycopg2
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
@@ -10,34 +24,31 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Create a Python virtual environment and install requirements
-# (Using a venv is safer even in Docker to avoid system package conflicts)
-COPY scripts/requirements.txt /app/scripts/requirements.txt
+# Create Python venv and install ML dependencies
+COPY scripts/requirements.txt scripts/requirements.txt
 RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r /app/scripts/requirements.txt
+RUN pip install --no-cache-dir -r scripts/requirements.txt
 
-# Install CmdStan (Required for Prophet)
-RUN python3 -c "import cmdstanpy; cmdstanpy.install_cmdstan()"
+# Install CmdStan (required by Prophet internally)
+RUN python3 -c "import cmdstanpy; cmdstanpy.install_cmdstan()" 2>&1 | tail -5
 
-# Copy the Maven wrapper and pom.xml first to cache dependencies
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-RUN ./mvnw dependency:go-offline -B
+# Copy the built JAR from Stage 1
+COPY --from=builder /build/target/profitlense-0.0.1-SNAPSHOT.jar app.jar
 
-# Copy source code and Python scripts
-COPY src src
-COPY scripts scripts
+# Copy Python forecast script
+COPY scripts/forecast.py scripts/forecast.py
 
-# Build the Spring Boot application
-RUN ./mvnw clean package -DskipTests
+# Copy the demo dataset (needed for DataLoaderRunner on first start)
+COPY data.csv data.csv
 
-# Expose the default Spring Boot port
+# Expose port
 EXPOSE 8080
 
-# Command to run the application
-CMD ["java", "-jar", "target/profitlense-0.0.1-SNAPSHOT.jar"]
+# Run with production-friendly JVM flags
+CMD ["java", \
+     "-Xmx384m", \
+     "-Xms128m", \
+     "-jar", "app.jar"]

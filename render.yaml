@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: profitlense-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Free tier: 512MB RAM, shared CPU, sleeps after 15 min inactivity
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false  # Set manually in Render dashboard
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false  # Set manually in Render dashboard
+    healthCheckPath: /actuator/health

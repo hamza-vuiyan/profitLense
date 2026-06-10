@@ -86,19 +86,20 @@
 
 ---
 
-### Phase 2: AI Engine — Forecasting (Day 1, 2 PM – 5 PM)
-**Goal**: Prophet forecasting script working end-to-end
+### Phase 2: AI Engine — Forecasting (Day 1, 2 PM – 5 PM) ✅ Complete
+**Goal**: Prophet forecasting script working end-to-end, ready for hybrid deployment.
 
 **Backend tasks:**
-- Add Python script: forecast.py (reads sales_records → Prophet → writes forecasts table)
-- Build ForecastService.java → runProphet(merchantId) → calls forecast.py via ProcessBuilder
-- Build /api/forecast GET endpoint → returns latest forecasts for a merchant
+- ✅ Add Python script: `forecast.py` (reads sales_records → Prophet → writes forecasts table)
+- ✅ Build `ForecastService.java` → `runProphet(merchantId)` → calls `forecast.py` via `ProcessBuilder`
+- ✅ Build `/api/forecast` GET endpoint → returns latest forecasts for a merchant
+- ✅ Added `Dockerfile` & `scripts/requirements.txt` to support seamless deployment of Java + Python
 
 **Python/ML tasks:**
-- forecast.py: loads sales history per product, trains Prophet, outputs 4-week forecast
-- Handle edge cases: products with <10 sales records
+- ✅ `forecast.py`: loads sales history per product, trains Prophet, outputs 4-week forecast
+- ✅ Handle edge cases: products with <10 sales records
 
-**Testing:** Postman POST to trigger forecast. Verify predictions in forecasts table.
+**Testing:** ✅ Postman POST to trigger forecast. Verify predictions in forecasts table.
 
 ---
 

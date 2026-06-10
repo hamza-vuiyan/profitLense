@@ -43,16 +43,19 @@ public class ForecastService {
 
         // Resolve the path to forecast.py relative to the working directory
         Path scriptPath = Paths.get("scripts", "forecast.py").toAbsolutePath();
-        Path pythonPath = Paths.get("scripts", "venv", "bin", "python3").toAbsolutePath();
+        
+        // Detect Python path: use local venv if available, else fallback to global (e.g. for Docker)
+        Path localVenvPython = Paths.get("scripts", "venv", "bin", "python3").toAbsolutePath();
+        String pythonCommand = localVenvPython.toFile().exists() ? localVenvPython.toString() : "python3";
 
         // Build the DB URL for psycopg2 with embedded credentials
         String dbUrl = buildPsycopg2Url(datasourceUrl, datasourceUsername, datasourcePassword);
 
         log.info("Running Prophet forecast for merchant={}", merchantId);
-        log.debug("Script path: {}, Python: {}", scriptPath, pythonPath);
+        log.debug("Script path: {}, Python: {}", scriptPath, pythonCommand);
 
         ProcessBuilder pb = new ProcessBuilder(
-                pythonPath.toString(),
+                pythonCommand,
                 scriptPath.toString(),
                 "--db-url", dbUrl,
                 "--merchant-id", merchantId.toString(),

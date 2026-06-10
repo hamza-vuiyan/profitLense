@@ -130,6 +130,13 @@ export default function App() {
             </>
           )}
         </div>
+
+        <footer className="footer">
+          <span className="footer-brand">ProfitLens © {new Date().getFullYear()}</span>
+          <span className="footer-author">
+            Made with <span className="footer-author-heart">❤️</span> by <strong>BrainFreezed Org</strong>
+          </span>
+        </footer>
       </div>
     </div>
   )

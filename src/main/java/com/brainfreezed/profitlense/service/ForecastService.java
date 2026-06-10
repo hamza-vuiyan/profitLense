@@ -13,7 +13,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -134,9 +134,10 @@ public class ForecastService {
      * Returns the latest forecast records for a merchant, from today onwards.
      */
     public List<ForecastDTO> getForecasts(UUID merchantId) {
-        LocalDate today = LocalDate.now();
+        // Use createdAt-ordered query — forecast dates may be historical (demo dataset from 2011)
+        // so filtering by "today" would always return empty results
         List<Forecast> forecasts = forecastRepository
-                .findByMerchantIdAndForecastDateGreaterThanEqualOrderByForecastDateAsc(merchantId, today);
+                .findByMerchantIdOrderByCreatedAtDesc(merchantId);
 
         return forecasts.stream()
                 .map(f -> ForecastDTO.builder()

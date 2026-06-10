@@ -18,10 +18,26 @@ Outputs:
 
 import argparse
 import json
+import os
 import sys
+from contextlib import contextmanager
 import warnings
 
 warnings.filterwarnings("ignore")
+
+@contextmanager
+def suppress_stdout_stderr():
+    """Context manager to suppress stdout/stderr (suppress Stan output)."""
+    with open(os.devnull, 'w') as devnull:
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = devnull
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
 import pandas as pd
 import psycopg2
@@ -34,6 +50,7 @@ def parse_args():
     parser.add_argument("--merchant-id", required=True, help="Merchant UUID")
     parser.add_argument("--min-records", type=int, default=10, help="Min records required to run Prophet")
     parser.add_argument("--forecast-weeks", type=int, default=4, help="Number of weeks to forecast")
+    parser.add_argument("--limit", type=int, default=10, help="Max products to forecast (top by data volume)")
     return parser.parse_args()
 
 
@@ -95,8 +112,10 @@ def run_prophet(df_product: pd.DataFrame, forecast_weeks: int) -> pd.DataFrame:
         weekly_seasonality=True,
         daily_seasonality=False,
         interval_width=0.8,
+        mcmc_samples=0,  # Use MAP estimation — 100x faster than full MCMC
     )
-    model.fit(df_prophet)
+    with suppress_stdout_stderr():
+        model.fit(df_prophet)
 
     future = model.make_future_dataframe(periods=forecast_weeks * 7, freq="D")
     forecast = model.predict(future)
@@ -170,7 +189,10 @@ def main():
     forecasted = 0
     skipped = 0
 
-    for product_id, group in product_groups:
+    # Sort product groups by number of records descending — forecast top products first
+    sorted_groups = sorted(product_groups, key=lambda kv: len(kv[1]), reverse=True)
+
+    for product_id, group in sorted_groups[:args.limit]:
         if len(group) < args.min_records:
             skipped += 1
             continue

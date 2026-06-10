@@ -1,8 +1,8 @@
 package com.brainfreezed.profitlense.controller;
 
-import com.brainfreezed.profitlense.dto.ForecastDTO;
-import com.brainfreezed.profitlense.dto.ForecastRunResultDTO;
-import com.brainfreezed.profitlense.service.ForecastService;
+import com.brainfreezed.profitlense.dto.PricingRunResultDTO;
+import com.brainfreezed.profitlense.dto.PricingSignalDTO;
+import com.brainfreezed.profitlense.service.PricingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.brainfreezed.profitlense.model.Merchant;
@@ -19,9 +19,9 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @Slf4j
-public class ForecastController {
+public class PricingController {
 
-    private final ForecastService forecastService;
+    private final PricingService pricingService;
     private final MerchantRepository merchantRepository;
 
     private UUID resolveMerchantId(String merchantIdStr) {
@@ -36,17 +36,17 @@ public class ForecastController {
     }
 
     /**
-     * GET /api/forecast?merchantId={uuid}
-     * Returns latest forecasts (from today forward) for the given merchant.
+     * GET /api/pricing?merchantId={uuid}
+     * Returns latest pricing signals for the given merchant.
      */
-    @GetMapping("/forecast")
-    public ResponseEntity<List<ForecastDTO>> getForecasts(
+    @GetMapping("/pricing")
+    public ResponseEntity<List<PricingSignalDTO>> getPricingSignals(
             @RequestParam(required = false) String merchantId) {
-        log.info("GET /api/forecast for merchant={}", merchantId);
+        log.info("GET /api/pricing for merchant={}", merchantId);
         try {
             UUID id = resolveMerchantId(merchantId);
-            List<ForecastDTO> forecasts = forecastService.getForecasts(id);
-            return ResponseEntity.ok(forecasts);
+            List<PricingSignalDTO> signals = pricingService.getPricingSignals(id);
+            return ResponseEntity.ok(signals);
         } catch (IllegalArgumentException e) {
             log.warn("Invalid merchantId: {}", merchantId);
             return ResponseEntity.badRequest().build();
@@ -54,20 +54,16 @@ public class ForecastController {
     }
 
     /**
-     * POST /api/forecast/run?merchantId={uuid}
-     * Triggers the Prophet Python script to generate new forecasts.
-     * This may take 30–120 seconds depending on product count.
+     * POST /api/pricing/run?merchantId={uuid}
+     * Triggers the Rule engine to generate new pricing signals.
      */
-    @PostMapping("/forecast/run")
-    public ResponseEntity<ForecastRunResultDTO> runForecastEngine(
+    @PostMapping("/pricing/run")
+    public ResponseEntity<PricingRunResultDTO> runPricingEngine(
             @RequestParam(required = false) String merchantId) {
-        log.info("POST /api/forecast/run for merchant={}", merchantId);
+        log.info("POST /api/pricing/run for merchant={}", merchantId);
         try {
             UUID id = resolveMerchantId(merchantId);
-            ForecastRunResultDTO result = forecastService.runProphet(id);
-            if ("ERROR".equals(result.getStatus())) {
-                return ResponseEntity.internalServerError().body(result);
-            }
+            PricingRunResultDTO result = pricingService.runPricingEngine(id);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             log.warn("Invalid merchantId: {}", merchantId);

@@ -26,7 +26,6 @@ export default function Sidebar() {
         {navItem('/', '🏠', 'Dashboard', true)}
         <div className="nav-section" style={{marginTop:12}}>Presentation</div>
         {navItem('/docs', '📖', 'Documentation')}
-        {navItem('/admin', '⚙️', 'Admin Panel')}
       </nav>
 
       <div className="sidebar-bottom">

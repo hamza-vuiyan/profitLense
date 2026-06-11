@@ -32,36 +32,4 @@ export async function getHealth() {
   return data
 }
 
-export async function getDocsConfig() {
-  const { data } = await api.get('/api/docs/config')
-  return data
-}
 
-export async function getDocsTeam() {
-  const { data } = await api.get('/api/docs/team')
-  return data
-}
-
-export async function getDocsMetrics() {
-  const { data } = await api.get('/api/docs/live-metrics')
-  return data
-}
-
-export async function getAdminConfig() {
-  const { data } = await api.get('/api/admin/config')
-  return data
-}
-
-export async function updateAdminConfig(configData) {
-  const { data } = await api.post('/api/admin/config', configData)
-  return data
-}
-
-export async function addTeamMember(memberData) {
-  const { data } = await api.post('/api/admin/team', memberData)
-  return data
-}
-
-export async function deleteTeamMember(id) {
-  await api.delete(`/api/admin/team/${id}`)
-}

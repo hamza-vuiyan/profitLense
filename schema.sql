@@ -62,3 +62,25 @@ CREATE INDEX IF NOT EXISTS idx_forecasts_merchant ON forecasts(merchant_id, fore
 CREATE INDEX IF NOT EXISTS idx_forecasts_product ON forecasts(product_id);
 CREATE INDEX IF NOT EXISTS idx_pricing_merchant ON pricing_signals(merchant_id);
 CREATE INDEX IF NOT EXISTS idx_pricing_product ON pricing_signals(product_id);
+
+-- Docs Configuration Table
+CREATE TABLE IF NOT EXISTS docs_config (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    is_visible BOOLEAN DEFAULT true,
+    visible_from TIMESTAMP,
+    visible_until TIMESTAMP,
+    pitch_text TEXT,
+    tech_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Team Members Table
+CREATE TABLE IF NOT EXISTS team_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

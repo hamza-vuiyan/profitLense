@@ -1,4 +1,16 @@
+import { NavLink } from 'react-router-dom'
+
 export default function Sidebar() {
+  const navItem = (to, icon, label, end = false) => (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+    >
+      <span className="nav-icon">{icon}</span> {label}
+    </NavLink>
+  )
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -11,34 +23,10 @@ export default function Sidebar() {
 
       <nav className="sidebar-nav">
         <div className="nav-section">Main</div>
-        <div className="nav-item active">
-          <span className="nav-icon">🏠</span> Dashboard
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">💰</span> Pricing
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">📈</span> Forecasts
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">📦</span> Products
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">📋</span> Sales History
-        </div>
-
-        <div className="nav-section" style={{marginTop:12}}>Reports</div>
-        <div className="nav-item">
-          <span className="nav-icon">💡</span> Advisory
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">⬇</span> Export
-        </div>
-
-        <div className="nav-section" style={{marginTop:12}}>Settings</div>
-        <div className="nav-item">
-          <span className="nav-icon">⚙</span> Configuration
-        </div>
+        {navItem('/', '🏠', 'Dashboard', true)}
+        <div className="nav-section" style={{marginTop:12}}>Presentation</div>
+        {navItem('/docs', '📖', 'Documentation')}
+        {navItem('/admin', '⚙️', 'Admin Panel')}
       </nav>
 
       <div className="sidebar-bottom">

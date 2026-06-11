@@ -32,4 +32,19 @@ export async function getHealth() {
   return data
 }
 
+export async function getDocsConfig() {
+  const { data } = await api.get('/api/docs/config')
+  return data
+}
+
+export async function getDocsTeam() {
+  const { data } = await api.get('/api/docs/team')
+  return data
+}
+
+export async function getDocsMetrics() {
+  const { data } = await api.get('/api/docs/live-metrics')
+  return data
+}
+
 
